@@ -2,6 +2,8 @@ require 'cannon'
 
 class CannonRepository
 
+  @@table = :cannons
+
   def initialize(db)
     @db = db
   end
@@ -13,17 +15,17 @@ class CannonRepository
       bore: cannon.bore,
       last_fired_at: cannon.last_fired_at
     }
-    row = @db[:cannons].where(id: cannon.id).first
+    row = @db[@@table].where(id: cannon.id).first
 
     if row
-      @db[:cannons].where(id: cannon.id).update(attributes)
+      @db[@@table].where(id: cannon.id).update(attributes)
     else
-      @db[:cannons].insert(attributes)
+      @db[@@table].insert(attributes)
     end
   end
 
   def find_ready_to_fire
-    rows = @db[:cannons].where('last_fired_at IS NULL OR
+    rows = @db[@@table].where('last_fired_at IS NULL OR
                                 last_fired_at < ?', 1.minute.ago)
     rows.map { |row| build_cannon(row) }
   end
