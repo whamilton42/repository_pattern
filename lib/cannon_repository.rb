@@ -4,8 +4,8 @@ class CannonRepository
 
   @@table = :cannons
 
-  def initialize(db)
-    @db = db
+  def initialize(adaptor)
+    @adaptor = adaptor
   end
 
   def persist(cannon)
@@ -15,26 +15,26 @@ class CannonRepository
       bore: cannon.bore,
       last_fired_at: cannon.last_fired_at
     }
-    row = @db[@@table].where(id: cannon.id).first
+    existing_record = @adaptor.find_by_id(cannon.id)
 
-    if row
-      @db[@@table].where(id: cannon.id).update(attributes)
+    if existing_record
+      @adaptor.update(cannon.id, attributes)
     else
-      @db[@@table].insert(attributes)
+      @adaptor.insert(attributes)
     end
   end
 
   def find_ready_to_fire
-    rows = @db[@@table].where('last_fired_at IS NULL OR
-                                last_fired_at < ?', 1.minute.ago)
-    rows.map { |row| build_cannon(row) }
+    existing_records = @adaptor.where('last_fired_at IS NULL OR
+                                       last_fired_at < ?', 1.minute.ago)
+    existing_records.map { |record| build_cannon(record) }
   end
 
 
   private
 
-  def build_cannon(row)
-    Cannon.new(row)
+  def build_cannon(record)
+    Cannon.new(record)
   end
 
 end

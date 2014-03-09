@@ -1,8 +1,10 @@
 require 'spec_helper'
 require 'cannon_repository'
+require 'persistence_adaptors/sequel'
 
 describe CannonRepository do
-  let(:cannon_repository) { described_class.new(DB) }
+  let(:adaptor) { SequelPersistenceAdaptor.new(DB, :cannons) }
+  let(:cannon_repository) { described_class.new(adaptor) }
 
   let(:last_fired_at) { nil }
   let(:cannon_attributes) do
